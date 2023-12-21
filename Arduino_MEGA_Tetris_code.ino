@@ -41,9 +41,9 @@ You need 8 LEDs per row and a total of 16 rows so 128 LEDs.
 
 
 //Inputs/outputs
-#define MAX7219_Data_IN 3
-#define MAX7219_Chip_Select  4
-#define MAX7219_Clock 5
+int digit[] = {10,11,12,13};
+int segment[] = {2,3,4,5,6,7,8,9};
+
 int button_left = 8;
 int button_right = 9;
 int button_up = 11;
@@ -55,6 +55,7 @@ int button_start = 12;
 //Variables
 byte adr = 0x08;
 byte num = 0x00;
+byte digits_data[10] = {0xFC, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE4, 0xFE, 0xE6};
 int i = 0;
 int top_score = 0;
 int score = 0;
@@ -73,12 +74,17 @@ unsigned long previousMillis = 0;
 unsigned long currentMillis = 0;
 
 //Function to shift data on the 7 segment module
-void shift(byte send_to_address, byte send_this_data)
-{
-  digitalWrite(MAX7219_Chip_Select, LOW);
-  shiftOut(MAX7219_Data_IN, MAX7219_Clock, MSBFIRST, send_to_address);
-  shiftOut(MAX7219_Data_IN, MAX7219_Clock, MSBFIRST, send_this_data);
-  digitalWrite(MAX7219_Chip_Select, HIGH);
+void show_digit(int pos, int num) {
+  for (int i=0; i < 4; i++) {
+    if (i+1 == pos) 
+      digitalWrite(digit[i], LOW);
+    else
+      digitalwrite(digit[i], HIGH);
+  }
+  for (int i=0; i < 8; i++) {
+    byte segment_data = (digits_data[num] & (0x01 << i)) >> i;
+    digitalWrite(segment[7-i], segment_data);
+  }
 }
 //////////////////////////////////////////////////////////////////
 
