@@ -41,8 +41,8 @@ You need 8 LEDs per row and a total of 16 rows so 128 LEDs.
 
 
 //Inputs/outputs
-int digit[] = {10,11,12,13};
-int segment[] = {2,3,4,5,6,7,8,9};
+int digit[] = {22,23,24,25};
+int segment[] = {26,27,28,29,30,31,32,33};
 
 int button_left = 8;
 int button_right = 9;
@@ -57,12 +57,7 @@ byte adr = 0x08;
 byte num = 0x00;
 byte digits_data[10] = {0xFC, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE4, 0xFE, 0xE6};
 int i = 0;
-int top_score = 0;
 int score = 0;
-int top_score_1 = 0;
-int top_score_2 = 0;
-int top_score_3 = 0;
-int top_score_4 = 0;
 int score_1 = 0;
 int score_2 = 0;
 int score_3 = 0;
@@ -431,31 +426,17 @@ void add_piece_to_grid() {
 // Move everything down 1 space, destroying the old row number y in the process.
 void delete_row(int y) {
   score = score + 10;
-  if(score > top_score)
-  {
-    EEPROM_writeAnything(1, score);
-  }
   
-  EEPROM_readAnything(1,top_score);
-  top_score_1 = top_score - (  ( top_score/10 ) * 10  );
-  top_score_2 = ((top_score - (  ( top_score/100 ) * 100  )) - top_score_1)/10;
-  top_score_3 = ((top_score - (  ( top_score/1000 ) * 1000  )) - top_score_1 - top_score_2)/100;
-  top_score_4 = (top_score - top_score_1 - top_score_2 - top_score_3) / 1000;
-  
-  score_1 = score - (  ( score/10 ) * 10  );
-  score_2 = ((score - (  ( score/100 ) * 100  )) - score_1)/10;
-  score_3 = ((score - (  ( score/1000 ) * 1000  )) - score_1 - score_2)/100;
-  score_4 = (score - score_1 - score_2 - score_3) / 1000;
+  score_1 = score % 10;
+  score_2 = (score % 100) / 10;
+  score_3 = (score % 1000) / 100;
+  score_4 = score / 1000;
   
   
-  shift(0x08, score_4); //digit 7 (leftmost digit) data
-  shift(0x07, score_3);
-  shift(0x06, score_2);
-  shift(0x05, score_1);
-  shift(0x04, top_score_4);
-  shift(0x03, top_score_3);
-  shift(0x02, top_score_2);
-  shift(0x01, top_score_1); //digit 0 (rightmost digit) data
+  show_digit(1, score_1);
+  show_digit(2, score_2);
+  show_digit(3, score_3);
+  show_digit(4, score_4);
 
   
   int x;
@@ -496,17 +477,7 @@ void remove_full_rows() {
 
 
 void try_to_move_piece_sideways() {
-  // what does the joystick angle say
-  int dx = map(analogRead(joystick_x),0,1023,512,-512);
-  
   int new_px = 0;
-  // is the joystick really being pushed?
-  if(dx> JOYSTICK_DEAD_ZONE) {
-    new_px=-1;
-  }
-  if(dx<-JOYSTICK_DEAD_ZONE) {
-    new_px=1;
-  }
   
   if(!digitalRead(button_left))
   {
@@ -517,15 +488,11 @@ void try_to_move_piece_sideways() {
   {
     new_px=1;
   }
-  
 
   if(new_px!=old_px && piece_can_fit(piece_x+new_px,piece_y,piece_rotation)==1) {
     piece_x+=new_px;
   }
 
-
-
-  
   old_px = new_px;
 }
 
@@ -541,9 +508,6 @@ void try_to_rotate_piece() {
   }
   old_button=new_button;
   
-  // up on joystick to rotate
-  int dy = map(analogRead(joystick_y),0,1023,512,-512);
-  if(dy>JOYSTICK_DEAD_ZONE) i_want_to_turn=1;
   
   if(i_want_to_turn==1 && i_want_to_turn != old_i_want_to_turn) {
     // figure out what it will look like at that new angle
@@ -634,9 +598,7 @@ void draw_restart()
    strip.setPixelColor(52, strip.Color(150,150,150)); 
    strip.setPixelColor(53, strip.Color(150,150,150)); */
    strip.setPixelColor(55, strip.Color(150,150,150)); 
-   digitalWrite(buzzer,HIGH);
-   delay(10);
-   digitalWrite(buzzer,LOW); 
+  
    strip.setPixelColor(74, strip.Color(150,150,150)); 
    strip.setPixelColor(77, strip.Color(150,150,150));
    strip.setPixelColor(83, strip.Color(150,150,150));  
@@ -652,12 +614,6 @@ void draw_restart()
    strip.setPixelColor(108, strip.Color(150,150,150)); 
    strip.setPixelColor(109, strip.Color(150,150,150)); 
    strip.show(); // This sends the updated pixel color to the hardware.
-   /*if(!pause_onece)
-   {
-    mp3.playMp3FolderTrack(2);  
-    pause_onece = true;
-    delay(1000);
-   }*/
 }
 
 
@@ -679,7 +635,6 @@ void all_white()
 
 void game_over() {
   score = 0;
-  mp3.playMp3FolderTrack(4);  // engine start + submarine sound
   game_over_loop_leds();
   delay(1000);
   int x,y;
@@ -693,9 +648,7 @@ void game_over() {
     currentMillis = millis();
     if(currentMillis - previousMillis >= 1000){
       previousMillis += 1000;
-      digitalWrite(buzzer,HIGH);
       delay(10);
-      digitalWrite(buzzer,LOW);    
       strip.setPixelColor(55-led_number, strip.Color(150,150,150));  
       strip.show();
       led_number += 1; 
@@ -705,13 +658,11 @@ void game_over() {
     // click the button?
     if(!digitalRead(button_start)) {
       // restart!
-      mp3.playMp3FolderTrack(3);  // engine start + submarine sound
       all_white();
       delay(400);
       break;
     }
   }
-  mp3.playMp3FolderTrack(3);  // engine start + submarine sound
   all_white();
   setup();
   return;
@@ -754,15 +705,9 @@ void try_to_drop_piece() {
 
 
 void try_to_drop_faster() {
-  int y = map(analogRead(joystick_y),0,1023,512,-512);
 
   if(!digitalRead(button_down))
   {
-    try_to_drop_piece();
-  }
-  
-  if(y<-JOYSTICK_DEAD_ZONE) {
-    // player is holding joystick down, drop a little faster.
     try_to_drop_piece();
   }
 }
@@ -800,18 +745,6 @@ int game_is_over() {
 // called once when arduino reboots
 void setup() {
   Serial.begin(115200);  
-  mp3.begin();
-  uint16_t volume = mp3.getVolume();
-  mp3.setVolume(30);  
-  uint16_t count = mp3.getTotalTrackCount();
-  delay(1000);
-  mp3.playMp3FolderTrack(1);  // engine start + submarine sound
-  //EEPROM_writeAnything(1, 000);
-  
-  pinMode(MAX7219_Data_IN, OUTPUT);
-  pinMode(MAX7219_Chip_Select, OUTPUT);
-  pinMode(MAX7219_Clock, OUTPUT);
-  digitalWrite(MAX7219_Clock, HIGH);
 
   pinMode(button_pause,INPUT_PULLUP);
   pinMode(button_start,INPUT_PULLUP);
@@ -820,34 +753,13 @@ void setup() {
   pinMode(button_up,INPUT_PULLUP);
   pinMode(button_down,INPUT_PULLUP);
 
-  pinMode(buzzer,OUTPUT);
-  delay(1);
-
   //Setup
-  shift(0x0f, 0x00); //display test register - test mode off
-  shift(0x0c, 0x01); //shutdown register - normal operation
-  shift(0x0b, 0x07); //scan limit register - display digits 0 thru 7
-  shift(0x0a, 0x0f); //intensity register - max brightness
-  shift(0x09, 0xff); //decode mode register - CodeB decode all digits
-  
-  EEPROM_readAnything(1,top_score);
-
-  Serial.println(top_score);
-  
-  top_score_1 = top_score - (  ( top_score/10 ) * 10  );
-  top_score_2 = ((top_score - (  ( top_score/100 ) * 100  )) - top_score_1)/10;
-  top_score_3 = ((top_score - (  ( top_score/1000 ) * 1000  )) - top_score_1 - top_score_2)/100;
-  top_score_4 = (top_score - top_score_1 - top_score_2 - top_score_3) / 1000;
-  
-  
-  shift(0x08, 0x0f); //digit 7 (leftmost digit) data
-  shift(0x07, 0x0f);
-  shift(0x06, 0x0f);
-  shift(0x05, 0x0f);
-  shift(0x04, top_score_4);
-  shift(0x03, top_score_3);
-  shift(0x02, top_score_2);
-  shift(0x01, top_score_1); //digit 0 (rightmost digit) data
+  for (i=0; i < 8; i++) {
+    pinMode(segment[i], OUTPUT);
+  }
+  for (i=0; i < 4; i++) {
+    pinMode(digit[i], OUTPUT);
+  }
 
 
   
@@ -856,17 +768,11 @@ void setup() {
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
   
-  // set up joystick button
-  pinMode(JOYSTICK_PIN,INPUT);
-  digitalWrite(JOYSTICK_PIN,HIGH);
-  
   // make sure arduino knows the grid is empty.
   for(i=0;i<GRID_W*GRID_H;++i) {
     grid[i]=0;
   }
   
-  // make the game a bit more random - pull a number from space and use it to 'seed' a crop of random numbers.
-  randomSeed(analogRead(joystick_y)+analogRead(2)+analogRead(3));
   
   // get ready to start the game.
   choose_new_piece();
@@ -889,9 +795,6 @@ void waitMilliseconds(uint16_t msWait)
   
   while ((millis() - start) < msWait)
   {
-    // calling mp3.loop() periodically allows for notifications 
-    // to be handled without interrupts
-    mp3.loop(); 
     delay(1);
   }
 }
@@ -919,7 +822,6 @@ void draw_pause()
    strip.show(); // This sends the updated pixel color to the hardware.
    if(!pause_onece)
    {
-    mp3.playMp3FolderTrack(2);  // engine start + submarine sound
     pause_onece = true;
     delay(1000);
    }
@@ -933,38 +835,24 @@ void draw_pause()
 // called over and over after setup()
 void loop() {
   long t = millis();
-
-  if(!Pause)
-  {
-    if(!digitalRead(button_pause) && !pause_pressed)
-    {
-      Pause = !Pause;
-      pause_pressed = true;
-      pause_onece = false;
-    }
-    if(digitalRead(button_pause) && pause_pressed)
-    {      
-      pause_pressed = false;
-    }
     
-    // the game plays at one speed,
-    if(t - last_move > move_delay ) {
-      last_move = t;
-      react_to_player();
-    }
-    
-    // ...and drops the falling block at a different speed.
-    if(t - last_drop > drop_delay ) {
-      last_drop = t;
-      try_to_drop_piece();
-    }
-    
-    // when it isn't doing those two things, it's redrawing the grid.
-    if(t - last_draw > draw_delay ) {
-      last_draw = t;
-      draw_grid();
-    }
-  }//end of !pause
+  // the game plays at one speed,
+  if(t - last_move > move_delay ) {
+    last_move = t;
+    react_to_player();
+  }
+  
+  // ...and drops the falling block at a different speed.
+  if(t - last_drop > drop_delay ) {
+    last_drop = t;
+    try_to_drop_piece();
+  }
+  
+  // when it isn't doing those two things, it's redrawing the grid.
+  if(t - last_draw > draw_delay ) {
+    last_draw = t;
+    draw_grid();
+  }
 
   else
   {
