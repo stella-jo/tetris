@@ -835,23 +835,37 @@ void draw_pause()
 // called over and over after setup()
 void loop() {
   long t = millis();
+
+  if(!Pause)
+  {
+    if(!digitalRead(button_pause) && !pause_pressed)
+    {
+      Pause = !Pause;
+      pause_pressed = true;
+      pause_onece = false;
+    }
+    if(digitalRead(button_pause) && pause_pressed)
+    {      
+      pause_pressed = false;
+    }
     
-  // the game plays at one speed,
-  if(t - last_move > move_delay ) {
-    last_move = t;
-    react_to_player();
-  }
-  
-  // ...and drops the falling block at a different speed.
-  if(t - last_drop > drop_delay ) {
-    last_drop = t;
-    try_to_drop_piece();
-  }
-  
-  // when it isn't doing those two things, it's redrawing the grid.
-  if(t - last_draw > draw_delay ) {
-    last_draw = t;
-    draw_grid();
+    // the game plays at one speed,
+    if(t - last_move > move_delay ) {
+      last_move = t;
+      react_to_player();
+    }
+    
+    // ...and drops the falling block at a different speed.
+    if(t - last_drop > drop_delay ) {
+      last_drop = t;
+      try_to_drop_piece();
+    }
+    
+    // when it isn't doing those two things, it's redrawing the grid.
+    if(t - last_draw > draw_delay ) {
+      last_draw = t;
+      draw_grid();
+    }
   }
 
   else
