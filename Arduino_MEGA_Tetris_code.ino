@@ -53,7 +53,7 @@ int button_start = 12;
 //Variables
 byte adr = 0x08;
 byte num = 0x00;
-byte digits_data[10] = {0xFC, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE4, 0xFE, 0xE6};
+byte digits_data[10] = {0xFC, 0x60, 0xDA, 0xF2, 0x66, 0xB6, 0xBE, 0xE4, 0xFE, 0xF6};
 int i = 0;
 int score = 0;
 int score_1 = 0;
@@ -70,13 +70,16 @@ unsigned long currentMillis = 0;
 void show_digit(int pos, int num) {
   for (int i=0; i < 4; i++) {
     if (i+1 == pos) 
-      digitalWrite(digit[i], LOW);
-    else
       digitalWrite(digit[i], HIGH);
+    else
+      digitalWrite(digit[i], LOW);
   }
   for (int i=0; i < 8; i++) {
     byte segment_data = (digits_data[num] & (0x01 << i)) >> i;
-    digitalWrite(segment[7-i], segment_data);
+    if (segment_data == 1)
+      digitalWrite(segment_pin[7-i], LOW);
+    else
+      digitalWrite(segment_pin[7-i], HIGH);
   }
 }
 //////////////////////////////////////////////////////////////////
