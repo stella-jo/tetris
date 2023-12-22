@@ -434,9 +434,13 @@ void delete_row(int y) {
   
   
   show_digit(1, score_1);
+  delay(5);
   show_digit(2, score_2);
+  delay(5);
   show_digit(3, score_3);
+  delay(5);
   show_digit(4, score_4);
+  delay(5);
 
   
   int x;
