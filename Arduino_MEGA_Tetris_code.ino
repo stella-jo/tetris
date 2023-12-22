@@ -74,7 +74,7 @@ void show_digit(int pos, int num) {
     if (i+1 == pos) 
       digitalWrite(digit[i], LOW);
     else
-      digitalwrite(digit[i], HIGH);
+      digitalWrite(digit[i], HIGH);
   }
   for (int i=0; i < 8; i++) {
     byte segment_data = (digits_data[num] & (0x01 << i)) >> i;
@@ -874,7 +874,6 @@ void loop() {
     {
       Pause = !Pause;
       pause_pressed = true;
-      mp3.playMp3FolderTrack(1);  // engine start + submarine sound
     }
     if(digitalRead(button_pause) && pause_pressed)
     {      
