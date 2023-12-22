@@ -13,9 +13,7 @@ You need 8 LEDs per row and a total of 16 rows so 128 LEDs.
 //------------------------------------------------------------------------------*/
 
 #include <Adafruit_NeoPixel.h>  //Downlaod here: https://electronoobs.com/eng_arduino_Adafruit_NeoPixel.php
-#include "EEPROMAnything.h"
 #include <SoftwareSerial.h>
-#include <DFMiniMp3.h>          //Downlaod here: https://electronoobs.com/eng_arduino_DFMiniMp3.php
 
         
 // size of the LED grid
