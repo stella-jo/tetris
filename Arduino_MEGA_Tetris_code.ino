@@ -424,25 +424,17 @@ void add_piece_to_grid() {
 }
 
 
-// Move everything down 1 space, destroying the old row number y in the process.
-void delete_row(int y) {
-  score = score + 10;
-  
+void split_score() {
   score_1 = score % 10;
   score_2 = (score % 100) / 10;
   score_3 = (score % 1000) / 100;
   score_4 = score / 1000;
-  
-  
-  show_digit(1, score_1);
-  delay(5);
-  show_digit(2, score_2);
-  delay(5);
-  show_digit(3, score_3);
-  delay(5);
-  show_digit(4, score_4);
-  delay(5);
+}
 
+// Move everything down 1 space, destroying the old row number y in the process.
+void delete_row(int y) {
+  score = score + 10;
+  split_score();
   
   int x;
   for(;y>0;--y) {
@@ -659,14 +651,6 @@ void game_over() {
       led_number += 1; 
     }    
    
-    
-    // click the button?
-    if(!digitalRead(button_start)) {
-      // restart!
-      all_white();
-      delay(400);
-      break;
-    }
   }
   all_white();
   setup();
@@ -766,6 +750,8 @@ void setup() {
     pinMode(digit[i], OUTPUT);
   }
 
+  score = 0;
+  split_score();
 
   
   int i;
@@ -841,6 +827,15 @@ void draw_pause()
 void loop() {
   long t = millis();
 
+  show_digit(1, score_4);
+  delay(5);
+  show_digit(2, score_3);
+  delay(5);
+  show_digit(3, score_2);
+  delay(5);
+  show_digit(4, score_1);
+  delay(5);
+
   if(!Pause)
   {
     if(!digitalRead(button_pause) && !pause_pressed)
@@ -852,6 +847,15 @@ void loop() {
     if(digitalRead(button_pause) && pause_pressed)
     {      
       pause_pressed = false;
+    }
+
+    // click the button?
+    if(!digitalRead(button_start)) {
+      // restart!
+      all_white();
+      delay(400);
+      setup();
+      return;
     }
     
     // the game plays at one speed,
