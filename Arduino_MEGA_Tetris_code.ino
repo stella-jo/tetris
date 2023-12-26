@@ -77,9 +77,9 @@ void show_digit(int pos, int num) {
   for (int i=0; i < 8; i++) {
     byte segment_data = (digits_data[num] & (0x01 << i)) >> i;
     if (segment_data == 1)
-      digitalWrite(segment_pin[7-i], LOW);
+      digitalWrite(segment[7-i], LOW);
     else
-      digitalWrite(segment_pin[7-i], HIGH);
+      digitalWrite(segment[7-i], HIGH);
   }
 }
 //////////////////////////////////////////////////////////////////
